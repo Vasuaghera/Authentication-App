@@ -99,7 +99,7 @@ VITE_BACKEND_URL=http://localhost:4000
 ```bash
 # Start backend server
 cd Backend
-npm run dev
+npm run devv
 
 # Start frontend server
 cd Frontend
