@@ -15,6 +15,7 @@ export const MainContextProvider = (props) => {
     axios.defaults.withCredentials = true ;
     axios.defaults.headers.common['Content-Type'] = 'application/json' ;
     axios.defaults.headers.common['Accept'] = 'application/json' ;
+    axios.defaults.timeout = 10000; // 10 seconds timeout
     
     // Add request interceptor
     axios.interceptors.request.use(
@@ -23,9 +24,12 @@ export const MainContextProvider = (props) => {
             if (config.method === 'get') {
                 config.params = { ...config.params, _t: Date.now() };
             }
+            // Ensure withCredentials is set
+            config.withCredentials = true;
             return config;
         },
         (error) => {
+            console.error('Request error:', error);
             return Promise.reject(error);
         }
     );
@@ -33,7 +37,7 @@ export const MainContextProvider = (props) => {
     // Add response interceptor to handle 401 errors
     axios.interceptors.response.use(
         (response) => response,
-        (error) => {
+        async (error) => {
             if (error.response) {
                 switch (error.response.status) {
                     case 401:
@@ -47,8 +51,14 @@ export const MainContextProvider = (props) => {
                     default:
                         toast.error(error.response.data?.message || "An error occurred") ;
                 }
+            } else if (error.request) {
+                // The request was made but no response was received
+                console.error('Network error:', error.request);
+                toast.error("Network error. Please check your connection and try again.");
             } else {
-                toast.error("Network error. Please check your connection.") ;
+                // Something happened in setting up the request
+                console.error('Error:', error.message);
+                toast.error("An unexpected error occurred. Please try again.");
             }
             return Promise.reject(error) ;
         }

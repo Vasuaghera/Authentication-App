@@ -24,16 +24,29 @@ const Profile = () => {
         isAccountVerified: false
     });
 
-    // Fetch profile data
-    const fetchProfile = async () => {
+    // Fetch profile data with retry logic
+    const fetchProfile = async (retryCount = 0) => {
         try {
-            const response = await axios.get(`${BackendUrl}/api/profile/details`, { withCredentials: true });
+            const response = await axios.get(`${BackendUrl}/api/profile/details`, {
+                withCredentials: true,
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            });
             if (response.data.success) {
                 setProfileData(response.data.user);
+            } else {
+                toast.error(response.data.message || 'Failed to fetch profile data');
             }
         } catch (error) {
             console.error('Error fetching profile data:', error);
-            toast.error('Failed to fetch profile data');
+            if (retryCount < 3) {
+                // Retry after 1 second
+                setTimeout(() => fetchProfile(retryCount + 1), 1000);
+            } else {
+                toast.error('Failed to fetch profile data. Please try again later.');
+            }
         } finally {
             setLoading(false);
         }
@@ -63,18 +76,30 @@ const Profile = () => {
         }
     };
 
-    // Handle form submission
+    // Handle form submission with retry logic
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
         try {
-            const response = await axios.put(`${BackendUrl}/api/profile/update`, profileData, { withCredentials: true });
+            const response = await axios.put(`${BackendUrl}/api/profile/update`, profileData, {
+                withCredentials: true,
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            });
             if (response.data.success) {
                 toast.success('Profile updated successfully');
                 setIsEditing(false);
                 setProfileData(response.data.user);
+            } else {
+                toast.error(response.data.message || 'Failed to update profile');
             }
         } catch (error) {
-            toast.error('Failed to update profile');
+            console.error('Error updating profile:', error);
+            toast.error('Failed to update profile. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
