@@ -9,6 +9,7 @@ export const MainContextProvider = (props) => {
     const BackendUrl = import.meta.env.VITE_BACKEND_URL ;
     const [isLoggedIn , setIsLoggedIn] = useState(false) ;
     const [userData , setUserData] = useState(false) ;
+    const [isLoading, setIsLoading] = useState(true);
 
     // Configure axios defaults
     axios.defaults.withCredentials = true ;
@@ -18,7 +19,10 @@ export const MainContextProvider = (props) => {
     // Add request interceptor
     axios.interceptors.request.use(
         (config) => {
-            // You can add any request headers here
+            // Add timestamp to prevent caching
+            if (config.method === 'get') {
+                config.params = { ...config.params, _t: Date.now() };
+            }
             return config;
         },
         (error) => {
@@ -53,7 +57,11 @@ export const MainContextProvider = (props) => {
     const getUserData = async() => {
         try {
             const {data} = await axios.get(BackendUrl+'/api/user/data', {
-                withCredentials: true
+                withCredentials: true,
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
             }) ;
             if (data.success) {
                 setUserData(data.userData) ;
@@ -67,17 +75,23 @@ export const MainContextProvider = (props) => {
             console.error("Error fetching user data:", error) ;
             setIsLoggedIn(false) ;
             setUserData(false) ;
+        } finally {
+            setIsLoading(false);
         }
     }
 
     const getAuthState = async() => {
         try{
             const {data} = await axios.get(BackendUrl + '/api/auth/isAuthenticated', {
-                withCredentials: true
+                withCredentials: true,
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
             }) ;
             if(data.success) {
                 setIsLoggedIn(true) ;
-                getUserData() ;
+                await getUserData() ;
             } else {
                 setIsLoggedIn(false) ;
                 setUserData(false) ;
@@ -87,6 +101,8 @@ export const MainContextProvider = (props) => {
             console.error("Error checking auth state:", error) ;
             setIsLoggedIn(false) ;
             setUserData(false) ;
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -98,7 +114,8 @@ export const MainContextProvider = (props) => {
         BackendUrl ,
         isLoggedIn , setIsLoggedIn ,
         userData , setUserData ,
-        getUserData
+        getUserData,
+        isLoading
     }
     
     return (

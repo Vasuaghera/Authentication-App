@@ -36,8 +36,10 @@ app.use(session({
         sameSite: 'none',
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
         httpOnly: true,
-        path: '/'
-    }
+        path: '/',
+        domain: '.onrender.com' // Add this to allow cookie sharing between subdomains
+    },
+    name: 'sessionId' // Add a specific name for the session cookie
 }));
 
 // Initialize Passport
