@@ -72,12 +72,12 @@ const EMAIL_TEMPLATES = {
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
             line-height: 1.6; 
-            color: #333; 
+      color: #333;
             max-width: 600px; 
             margin: 0 auto; 
             padding: 20px;
@@ -85,21 +85,21 @@ const EMAIL_TEMPLATES = {
         }
         .container {
             background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
         .header { 
             background-color: #f59e0b; 
             color: white; 
             padding: 25px; 
-            text-align: center; 
+      text-align: center;
             border-radius: 8px 8px 0 0;
         }
         .header h1 {
             margin: 0;
-            font-size: 24px;
-        }
+      font-size: 24px;
+    }
         .content { 
             background-color: #ffffff; 
             padding: 30px; 
@@ -109,7 +109,7 @@ const EMAIL_TEMPLATES = {
             background-color: #fff7ed;
             border: 2px dashed #f59e0b;
             border-radius: 8px;
-            padding: 20px;
+      padding: 20px;
             margin: 25px 0;
             text-align: center;
         }
@@ -133,8 +133,8 @@ const EMAIL_TEMPLATES = {
             border-radius: 4px;
         }
         .footer { 
-            text-align: center; 
-            color: #666; 
+      text-align: center;
+      color: #666;
             font-size: 14px; 
             margin-top: 30px;
             padding: 20px;
@@ -142,8 +142,8 @@ const EMAIL_TEMPLATES = {
         .divider {
             border-top: 1px solid #e5e7eb;
             margin: 20px 0;
-        }
-    </style>
+    }
+  </style>
 </head>
 <body>
     <div class="container">
@@ -201,7 +201,7 @@ const EMAIL_TEMPLATES = {
     </div>
     <div class="footer">
         <p>© 2024 Authentication Web</p>
-    </div>
+  </div>
 </body>
 </html>`
 };
@@ -427,7 +427,7 @@ export const logout = async (req, res) => {
 // For checking if user is already authenticated or not
 export const isAuthenticated = async (req, res) => {
     try {
-        return res.json({
+            return res.json({
             success: true,
             message: "User authenticated"
         });
