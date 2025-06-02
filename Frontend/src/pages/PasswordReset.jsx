@@ -8,11 +8,12 @@ import AOS from 'aos';
 import 'aos/dist/aos.css'
 
 const PasswordReset = () => {
- useEffect(() => {
-          AOS.init({
-            duration: 700, 
-          });
-        }, []);
+  useEffect(() => {
+    AOS.init({
+      duration: 700,
+    });
+  }, []);
+
   axios.defaults.withCredentials = true;
   const inputRefs = useRef([]);
   const navigate = useNavigate();
@@ -22,18 +23,18 @@ const PasswordReset = () => {
   const [otp, setOtp] = useState(0);
   const [isOtpSubmitted, setIsOtpSubmitted] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(0); // Timer for 1 minute
-  const { BackendUrl, isLoggedIn, userData, getUserData } = useContext(MainContext);
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const { BackendUrl } = useContext(MainContext);
 
   useEffect(() => {
     let timer;
     if (timeRemaining > 0) {
       timer = setInterval(() => {
         setTimeRemaining(prevTime => prevTime - 1);
-      }, 1000); // Decrease time by 1 every second
+      }, 1000);
     } else {
-      setIsButtonDisabled(false); // Enable the button when the timer reaches 0
-      clearInterval(timer); // Clear timer once it reaches 0
+      setIsButtonDisabled(false);
+      clearInterval(timer);
     }
     return () => clearInterval(timer);
   }, [timeRemaining]);
@@ -67,8 +68,8 @@ const PasswordReset = () => {
       if (data.success) {
         toast.success(data.message);
         setIsEmailSent(true);
-        setIsButtonDisabled(true); // Disable the button when OTP is sent
-        setTimeRemaining(60); // Set timer for 1 minute
+        setIsButtonDisabled(true);
+        setTimeRemaining(60);
       } else {
         toast.error(data.error);
       }
@@ -94,102 +95,163 @@ const PasswordReset = () => {
       const { data } = await axios.post(BackendUrl + '/api/auth/reset-password', { email, otp, newPassword });
       if (data.success) {
         toast.success("Password changed successfully");
+        navigate('/login');
       } else {
         toast.error("You Entered Incorrect OTP");
       }
-      data.success && navigate('/login');
     } catch (error) {
       toast.error(error.message);
     }
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-6 sm:px-0 bg-gradient-to-br from-blue-300 to-purple-400">
-      <img
-        onClick={() => navigate('/')}
-        className="absolute left-5 sm:left-20 top-5 w-28 sm:w-32 cursor-pointer"
-        src={assets.logo}
-        alt=""
-      />
+    <div className="min-h-screen bg-white dark:bg-slate-900">
+      {/* Logo */}
+      <div className="absolute top-8 left-8 sm:left-12 z-10">
+        <div 
+          onClick={() => navigate('/')}
+          className="flex items-center space-x-2 cursor-pointer group"
+        >
+          <span className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
+            AuthApp
+          </span>
+        </div>
+      </div>
 
-      <form data-aos="fade-right" onSubmit={onSubmitNewPassword} className='bg-slate-900 p-8 rounded-lg shadow-lg w-98 text-sm'>
-        <h1 className="text-white text-2xl font-semibold text-center mb-4">Reset Password</h1>
-        <p className="text-center mb-6 text-indigo-300">
-          Enter your registered Email address.
-        </p>
-
-        {/* Email Input */}
-        <div className='mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]'>
-          <img className='w-3 h-3' src={assets.mail_icon} alt="" />
-          <input
-            className='bg-transparent underline-none text-white focus:outline-none'
-            type="email"
-            placeholder='Email Id'
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+      <div className="flex min-h-screen">
+        {/* Right Side - Form */}
+        <div className="hidden lg:block lg:w-1/2 bg-gradient-to-br from-indigo-500 to-purple-600">
+          <div className="h-full flex items-center justify-center p-12">
+            <div className="max-w-lg text-center text-white">
+              <h2 className="text-4xl font-bold mb-6">Reset Your Password</h2>
+              <p className="text-lg text-indigo-100">
+                Follow the simple steps to securely reset your password and regain access to your account.
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Send OTP Button */}
-        <button
-          type="submit"
-          onClick={onSubmitEmail}
-          className='w-full py-2.5 bg-gradient-to-r from-indigo-500 to-indigo-900 text-white rounded-full mt-3'
-          disabled={isButtonDisabled}
-        >
-          {isButtonDisabled ? "Resend OTP in " + timeRemaining + "s" : "Send OTP"}
-        </button>
+        {/* Left Side - Form */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+          <div data-aos="fade-up" className="w-full max-w-md space-y-8">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Reset Password
+              </h2>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                Enter your email to receive a reset code
+              </p>
+            </div>
 
-        {/* OTP Input */}
-        {isEmailSent && (
-          <>
-            <p className="text-center mb-2 mt-10 text-indigo-300">
-              Enter the 6-digit code sent to your Email Id.
-            </p>
-            <div onChange={onSubmitResetEmailotp} className="flex justify-between mb-8" required onPaste={handlePaste}>
-              {Array(6)
-                .fill(0)
-                .map((_, index) => (
+            <form className="mt-8 space-y-6" onSubmit={onSubmitNewPassword}>
+              {/* Email Input */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Email Address
+                </label>
+                <div className="mt-1 relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <img src={assets.mail_icon} alt="" className="h-5 w-5 text-gray-400" />
+                  </div>
                   <input
-                    type="text"
-                    maxLength="1"
-                    key={index}
+                    id="email"
+                    name="email"
+                    type="email"
                     required
-                    className="w-12 h-12 m-[6px] p-4 bg-[#333A5C] text-white text-center text-xl rounded-md"
-                    ref={(e) => (inputRefs.current[index] = e)} // Storing the refs in inputRefs.current
-                    onInput={(e) => handleInput(e, index)}
-                    onKeyDown={(e) => handleDelete(e, index)}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="you@example.com"
                   />
-                ))}
-            </div>
-          </>
-        )}
+                </div>
+              </div>
 
-        {/* New Password Input */}
-        {isOtpSubmitted && (
-          <>
-            <p className="text-center mb-6 text-indigo-300">
-              Enter your New Password.
-            </p>
-            <div className='mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]'>
-              <img className='w-3 h-3' src={assets.lock_icon} alt="" />
-              <input
-                className='bg-transparent underline-none text-white focus:outline-none'
-                type="password"
-                placeholder='Password'
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-              />
-            </div>
-          </>
-        )}
+              {/* Send OTP Button */}
+              <button
+                type="button"
+                onClick={onSubmitEmail}
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isButtonDisabled}
+              >
+                {isButtonDisabled ? `Resend Code in ${timeRemaining}s` : 'Send Reset Code'}
+              </button>
 
-        <button className='w-full py-2.5 bg-gradient-to-r from-indigo-500 to-indigo-900 text-white rounded-full mt-3'>
-          Submit
-        </button>
-      </form>
+              {/* OTP Input */}
+              {isEmailSent && (
+                <div className="space-y-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Enter the 6-digit code
+                  </label>
+                  <div 
+                    onChange={onSubmitResetEmailotp} 
+                    className="flex justify-between gap-2" 
+                    required 
+                    onPaste={handlePaste}
+                  >
+                    {Array(6).fill(0).map((_, index) => (
+                      <input
+                        type="text"
+                        maxLength="1"
+                        key={index}
+                        required
+                        className="w-12 h-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-center text-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        ref={(e) => (inputRefs.current[index] = e)}
+                        onInput={(e) => handleInput(e, index)}
+                        onKeyDown={(e) => handleDelete(e, index)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* New Password Input */}
+              {isOtpSubmitted && (
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    New Password
+                  </label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <img src={assets.lock_icon} alt="" className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="password"
+                      name="password"
+                      type="password"
+                      required
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="••••••••"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              {isOtpSubmitted && (
+                <button
+                  type="submit"
+                  className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+                >
+                  Reset Password
+                </button>
+              )}
+            </form>
+
+            {/* Back to Login */}
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => navigate('/login')}
+                className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500"
+              >
+                Back to Login
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

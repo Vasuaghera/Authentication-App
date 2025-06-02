@@ -1,17 +1,52 @@
-import express from "express" ;
-import { isAuthenticated, login, logout, register, resetPassword, sendResetotp, sendVerifyotp, verifyEmail  } from "../controllers/auth.js";
-import userAuth from "../middleware/userAuth.js"
+import express from 'express';
+import { isAuthenticated, login, logout, register, resetPassword, sendResetotp } from "../controllers/auth.js";
+import { auth } from "../middleware/auth.js";
+import passport from 'passport';
 
-const authRouter = express.Router() ;
+const router = express.Router();
 
-authRouter.post('/register', register);
-authRouter.post('/login', login);
-authRouter.post('/logout', logout);
-authRouter.post('/send-verify-otp', userAuth , sendVerifyotp);
-authRouter.post('/verify-account', userAuth , verifyEmail);
-authRouter.get('/is-auth', userAuth , isAuthenticated);
-authRouter.post('/send-reset-otp' , sendResetotp);
-authRouter.post('/reset-password' , resetPassword);
+// Auth routes
+router.post('/register', register);
+router.post('/login', login);
+router.get('/logout', logout);
+router.get('/isAuthenticated', auth, isAuthenticated);
 
+// Password reset routes
+router.post('/send-reset-otp', sendResetotp);
+router.post('/reset-password', resetPassword);
 
-export default authRouter ;
+// Google OAuth routes
+router.get('/google',
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+router.get('/google/callback',
+    passport.authenticate('google', { failureRedirect: '/login' }),
+    (req, res) => {
+        // Generate JWT token
+        const token = req.user.getSignedJwtToken();
+        
+        // Set cookie
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        // Send response to frontend
+        res.send(`
+            <script>
+                window.opener.postMessage({ 
+                    data: { 
+                        success: true, 
+                        message: 'Google login successful',
+                        user: ${JSON.stringify(req.user)}
+                    }
+                }, '${process.env.FRONTEND_URL || 'http://localhost:5173'}');
+            </script>
+        `);
+    }
+);
+
+export default router;

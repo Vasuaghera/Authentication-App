@@ -1,14 +1,19 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
-import { BrowserRouter } from 'react-router-dom'
-import { MainContextProvider } from './context/MainContext.jsx'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App';
+import './index.css';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
+import { MainContextProvider } from './context/MainContext.jsx';
 
-createRoot(document.getElementById('root')).render(
+// Initialize AOS
+AOS.init();
+
+ReactDOM.createRoot(document.getElementById('root')).render(
   <BrowserRouter>
     <MainContextProvider>
       <App />
     </MainContextProvider>
-  </BrowserRouter>,
-)
+  </BrowserRouter>
+);

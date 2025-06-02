@@ -23,7 +23,7 @@ export const MainContextProvider = (props) => {
 
     const getAuthState = async() => {
         try{
-            const {data} = await axios.get(BackendUrl + '/api/auth/is-auth') ;
+            const {data} = await axios.get(BackendUrl + '/api/auth/isAuthenticated') ;
             if(data.success) {
                 setIsLoggedIn(true) ;
                 getUserData() ;
