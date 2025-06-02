@@ -25,14 +25,18 @@ const allowedOrigins = [
 
 app.use(express.json()) ;
 app.use(cookieParser()) ;
+
+// Session configuration
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key',
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: true,
     cookie: {
-        secure: true, // Set to true for HTTPS
-        sameSite: 'none', // Required for cross-origin requests
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        secure: true,
+        sameSite: 'none',
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        httpOnly: true,
+        path: '/'
     }
 }));
 
@@ -40,13 +44,12 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+// CORS configuration
 app.use(cors({
     origin: function(origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
         
         if (allowedOrigins.indexOf(origin) === -1) {
-            // In production, be more permissive
             if (process.env.NODE_ENV === 'production') {
                 return callback(null, true);
             }
@@ -57,8 +60,18 @@ app.use(cors({
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-})) ;
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    exposedHeaders: ['Set-Cookie']
+}));
+
+// Add headers middleware
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    next();
+});
 
 app.get("/" , (req,res) => res.send("Barobar chhe"))
 app.use('/api/auth',authRoute);
